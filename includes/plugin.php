@@ -63,6 +63,7 @@ function pc_sanitize( $in ) {
 		$tier = array(
 			'label'    => sanitize_text_field( $t['label'] ?? '' ),
 			'sorot'    => ! empty( $t['sorot'] ),
+			'lajur'    => min( 6, absint( $t['lajur'] ?? 0 ) ), // 0 = auto
 			'members'  => array(),
 		);
 		$ms = is_array( $t['members'] ?? null ) ? $t['members'] : array();
@@ -98,6 +99,24 @@ function pc_save( $data ) {
 		update_option( PC_HIST, array_slice( $h, 0, 15 ), false );
 	}
 	update_option( PC_OPT, $data, false );
+}
+
+/**
+ * Cards per row for a tier. lajur 0 = auto: up to 4 on one row
+ * (e.g. Imam 1–4, Bilal 1–4); bigger groups split into rows of 3 or 4,
+ * whichever leaves fewer empty spaces on the last row (9 biro → 3×3).
+ */
+function pc_cols( $count, $lajur = 0 ) {
+	$count = max( 1, (int) $count );
+	$lajur = (int) $lajur;
+	if ( $lajur > 0 ) return min( $lajur, $count );
+	if ( $count <= 4 ) return $count;
+	$best = 4; $gap = PHP_INT_MAX;
+	foreach ( array( 4, 3 ) as $c ) {
+		$g = ( $c - $count % $c ) % $c;
+		if ( $g < $gap ) { $gap = $g; $best = $c; }
+	}
+	return $best;
 }
 
 function pc_img_src( $m, $size = 'medium' ) {
@@ -153,9 +172,10 @@ function pc_render( $atts = array() ) {
 		$has_photo = false;
 		foreach ( $t['members'] as $m ) if ( pc_img_src( $m ) ) { $has_photo = true; break; }
 		$cls = 'pc-tier' . ( $t['sorot'] ? ' pc-sorot' : '' ) . ( $has_photo ? ' pc-photos' : '' );
+		$cols = pc_cols( count( $t['members'] ), $t['lajur'] ?? 0 );
 		if ( ! $first ) echo '<div class="pc-line" aria-hidden="true"></div>';
 		$first = false;
-		echo '<div class="' . esc_attr( $cls ) . '"' . ( $t['label'] !== '' ? ' role="group" aria-label="' . esc_attr( $t['label'] ) . '"' : '' ) . '>';
+		echo '<div class="' . esc_attr( $cls ) . '" style="--pc-cols:' . (int) $cols . '" data-cols="' . (int) $cols . '"' . ( $t['label'] !== '' ? ' role="group" aria-label="' . esc_attr( $t['label'] ) . '"' : '' ) . '>';
 		foreach ( $t['members'] as $m ) {
 			$src = pc_img_src( $m );
 			echo '<div class="pc-node">';
@@ -296,6 +316,7 @@ function pc_admin_page() {
 
 		<div class="pc-help">
 			<strong>Cara guna:</strong> Setiap <b>Peringkat</b> ialah satu baris dalam carta (atas → bawah). Seret <span class="dashicons dashicons-move"></span> untuk susun semula peringkat atau jawatan (boleh juga seret jawatan ke peringkat lain).
+			<b>Sebaris</b> = berapa kotak dalam satu baris (Auto: sehingga 4 sebaris, contoh Imam 1–4).
 			Biarkan <i>Nama</i> kosong untuk papar <em class="pc-placeholder">[Nama]</em>. Klik <b>Simpan</b> selepas selesai.
 		</div>
 

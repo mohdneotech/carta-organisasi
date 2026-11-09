@@ -15,6 +15,7 @@ Plugin WordPress untuk memaparkan **carta organisasi masjid / surau** yang boleh
 - **Warna** utama & aksen boleh ditukar supaya sepadan dengan logo masjid
 - **Sejarah versi** — 15 simpanan terakhir, boleh dipulihkan dengan satu klik
 - **Templat asas** masjid Malaysia (Penasihat → Nazir → Pegawai Utama → Imam/Bilal/Siak → Biro)
+- **Sebaris** — tetapkan berapa kad dalam satu baris bagi setiap peringkat (Auto: sehingga 4 sebaris, contoh Imam 1–4 / Bilal 1–4)
 - Responsif (2 kad sebaris di telefon), berfungsi dengan tema klasik dan tema blok
 - Kemas kini automatik dari GitHub Releases
 

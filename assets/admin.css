@@ -7,6 +7,8 @@
 .pc-thead { display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; margin-bottom: .6rem; }
 .pc-thead .f-label { flex: 1 1 260px; }
 .pc-tno { white-space: nowrap; }
+.pc-lajur-lbl { white-space: nowrap; }
+.pc-lajur-lbl select { min-height: 28px; vertical-align: middle; }
 .pc-tbtns { margin-left: auto; display: flex; gap: 4px; }
 .pc-tbtns .dashicons { font-size: 16px; width: 16px; height: 16px; vertical-align: middle; }
 .pc-thandle, .pc-handle { cursor: move; color: #8c8f94; }

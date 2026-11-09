@@ -11,6 +11,23 @@
 		});
 	}
 
+	// Same rule as pc_cols() in PHP.
+	function cols(n, lajur) {
+		n = Math.max(1, n); lajur = parseInt(lajur, 10) || 0;
+		if (lajur > 0) return Math.min(lajur, n);
+		if (n <= 4) return n;
+		var best = 4, gap = 99;
+		[4, 3].forEach(function (c) { var g = (c - n % c) % c; if (g < gap) { gap = g; best = c; } });
+		return best;
+	}
+
+	function lajurHTML(v) {
+		v = parseInt(v, 10) || 0;
+		var o = '<option value="0"' + (v ? '' : ' selected') + '>Auto</option>';
+		for (var i = 1; i <= 6; i++) o += '<option value="' + i + '"' + (v === i ? ' selected' : '') + '>' + i + '</option>';
+		return '<label class="pc-lajur-lbl" title="Bilangan kotak dalam satu baris">Sebaris <select class="f-lajur">' + o + '</select></label>';
+	}
+
 	function memberHTML(m) {
 		m = m || {};
 		var img = m.thumb || m.img_url || '';
@@ -33,7 +50,7 @@
 	}
 
 	function tierHTML(t) {
-		t = t || { label: '', sorot: false, members: [] };
+		t = t || { label: '', sorot: false, lajur: 0, members: [] };
 		var ms = (t.members || []).map(memberHTML).join('');
 		return '' +
 			'<div class="pc-t">' +
@@ -42,6 +59,7 @@
 				'<strong class="pc-tno"></strong>' +
 				'<input type="text" class="f-label" value="' + esc(t.label) + '" placeholder="Nama peringkat (untuk rujukan AJK sahaja)">' +
 				'<label class="pc-sorot-lbl"><input type="checkbox" class="f-sorot"' + (t.sorot ? ' checked' : '') + '> Serlahkan (warna hijau muda)</label>' +
+				lajurHTML(t.lajur) +
 				'<span class="pc-tbtns">' +
 					'<button type="button" class="button button-small pc-up" title="Naik">▲</button>' +
 					'<button type="button" class="button button-small pc-down" title="Turun">▼</button>' +
@@ -56,7 +74,7 @@
 	function collect() {
 		var out = { tajuk: $('#pc-tajuk').val(), nota: $('#pc-nota').val(), warna_utama: $('#pc-warna-utama').val(), warna_aksen: $('#pc-warna-aksen').val(), tiers: [] };
 		$tiers.children('.pc-t').each(function () {
-			var $t = $(this), t = { label: $t.find('.f-label').val(), sorot: $t.find('.f-sorot').is(':checked'), members: [] };
+			var $t = $(this), t = { label: $t.find('.f-label').val(), sorot: $t.find('.f-sorot').is(':checked'), lajur: parseInt($t.find('.f-lajur').val(), 10) || 0, members: [] };
 			$t.find('.pc-m').each(function () {
 				var $m = $(this);
 				t.members.push({
@@ -82,7 +100,8 @@
 			var photos = t.members.some(function (m) { return m.thumb; });
 			if (!first) h += '<div class="pc-line"></div>';
 			first = false;
-			h += '<div class="pc-tier' + (t.sorot ? ' pc-sorot' : '') + '">';
+			var c = cols(t.members.length, t.lajur);
+			h += '<div class="pc-tier' + (t.sorot ? ' pc-sorot' : '') + '" style="--pc-cols:' + c + '" data-cols="' + c + '">';
 			t.members.forEach(function (m) {
 				h += '<div class="pc-node">';
 				if (photos) h += m.thumb ? '<img class="pc-foto" src="' + esc(m.thumb) + '" alt="">' : '<span class="pc-foto pc-foto-kosong"><span class="dashicons dashicons-admin-users"></span></span>';
@@ -133,7 +152,7 @@
 	});
 	$tiers.on('click', '.pc-up', function () { var $t = $(this).closest('.pc-t'); $t.prev('.pc-t').before($t); refresh(true); });
 	$tiers.on('click', '.pc-down', function () { var $t = $(this).closest('.pc-t'); $t.next('.pc-t').after($t); refresh(true); });
-	$('#pc-form').on('input change', 'input, textarea', function () { refresh(true); });
+	$('#pc-form').on('input change', 'input, textarea, select', function () { refresh(true); });
 
 	// media picker
 	var frame, $cur;
